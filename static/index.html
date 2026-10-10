@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SramikGuard: Multimodal Biometric Attendance & Wage Auditing</title>
+    <!-- Tailwind CSS Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased">
+
+    <!-- Top Academic Navbar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                    SG
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                            Academic Capstone Showcase
+                        </span>
+                        <span class="text-xs text-slate-500 font-mono">Worksite #MH-04: Metro Depot, Mumbai</span>
+                    </div>
+                    <h1 class="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+                        SramikGuard: Multimodal Biometric Attendance & Wage Auditing
+                    </h1>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 text-xs">
+                <div class="hidden sm:flex items-center gap-2 px-2.5 py-1 bg-slate-100 rounded-md border border-slate-200 text-slate-700 font-mono">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span>FastAPI :8000</span>
+                    <span class="text-slate-300">|</span>
+                    <span>Redis Stream</span>
+                    <span class="text-slate-300">|</span>
+                    <span>Celery (4x)</span>
+                </div>
+                <button id="topbar-btn-audit" class="px-3 py-1.5 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-medium transition shadow-sm flex items-center gap-1.5">
+                    <span>🛡️</span>
+                    <span>Run Tamper Audit</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab Navigation Bar -->
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-100">
+            <nav class="flex space-x-2 sm:space-x-8 text-xs sm:text-sm font-medium -mb-px overflow-x-auto">
+                <button data-tab="tab-biometric" class="tab-btn tab-active py-2.5 px-3 inline-flex items-center gap-2 transition whitespace-nowrap">
+                    <span>👷</span>
+                    <span>Tab 1: Biometric & PAD (Worker Check-In)</span>
+                </button>
+                <button data-tab="tab-queue" class="tab-btn py-2.5 px-3 inline-flex items-center gap-2 transition whitespace-nowrap">
+                    <span>☁️</span>
+                    <span>Tab 2: Ingestion & Cloud Queue (FastAPI + Redis)</span>
+                </button>
+                <button data-tab="tab-ledger" class="tab-btn py-2.5 px-3 inline-flex items-center gap-2 transition whitespace-nowrap">
+                    <span>🔒</span>
+                    <span>Tab 3: Cryptographic Ledger & Audit Tool</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+
+    <!-- Main Workspace Container -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- ======================================================== -->
+        <!-- TAB 1: Biometric & PAD (Worker Check-In)                 -->
+        <!-- ======================================================== -->
+        <section id="tab-biometric" class="tab-pane space-y-6">
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div>
+                    <h2 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        <span>👷</span>
+                        Worker Shift Punch-In & Presentation Attack Detection (PAD)
+                    </h2>
+                    <p class="text-xs text-slate-600 mt-0.5">
+                        Verifies worker physical presence on site. Blocks proxy punches (printed passport photos, phone video replays) before any shift wage entitlement is credited.
+                    </p>
+                </div>
+                <div class="text-xs text-slate-500 font-mono bg-slate-50 px-2.5 py-1 rounded border border-slate-200">
+                    Standard: <span class="text-slate-800 font-semibold">ISO/IEC 30107-3 PAD</span> (&ge; 0.82)
+                </div>
+            </div>
+
+            <!-- Punch In Result Banner (Dynamic) -->
+            <div id="punch-result-banner" class="hidden"></div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Left Column: Controls (5 cols) -->
+                <div class="lg:col-span-5 space-y-5">
+                    <!-- Worker Selection Card -->
+                    <div class="academic-card p-4 space-y-3">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700">1. Select Enrolled Worker</h3>
+                            <span class="text-[11px] font-mono text-slate-500">Muster Registry</span>
+                        </div>
+                        <div id="worker-list" class="space-y-2 max-h-[260px] overflow-y-auto pr-1">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Shift & Attack Mode Card -->
+                    <div class="academic-card p-4 space-y-3.5">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700">2. Shift Allocation & Proxy Test</h3>
+                            <span class="text-[11px] text-slate-500 font-mono">Anti-Ghost Testing</span>
+                        </div>
+
+                        <!-- Test Mode Radio -->
+                        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2 text-xs">
+                            <label class="font-bold text-slate-700 block">Biometric Capture Mode (Examiner Test):</label>
+                            <div class="space-y-1.5">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="test-mode" value="LIVE" checked class="text-blue-600 focus:ring-blue-500">
+                                    <span class="text-slate-800 font-medium">Genuine Worker Face (Live Physical Presence)</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="test-mode" value="PRINT_2D" class="text-rose-600 focus:ring-rose-500">
+                                    <span class="text-slate-700">2D Printed Photo Spoof (Contractor Proxy Punch)</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="test-mode" value="SCREEN_REPLAY" class="text-rose-600 focus:ring-rose-500">
+                                    <span class="text-slate-700">Smartphone Screen Video Replay Attack</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Shift Duration -->
+                        <div>
+                            <div class="flex justify-between items-center text-xs mb-1">
+                                <span class="text-slate-600 font-medium">Shift Duration (Hajiri):</span>
+                                <span id="shift-label" class="font-mono font-bold text-blue-700">1.0 Full Shift (8h)</span>
+                            </div>
+                            <select id="shift-select" class="w-full bg-white border border-slate-300 rounded p-2 text-xs text-slate-800 focus:border-blue-500 outline-none">
+                                <option value="0.5">0.5 Half-Day Shift (4 hrs)</option>
+                                <option value="1.0" selected>1.0 Standard Full Shift (8 hrs)</option>
+                                <option value="1.5">1.5 Shift with Overtime (12 hrs)</option>
+                                <option value="2.0">2.0 Double Shift (16 hrs)</option>
+                            </select>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button id="btn-punch-in" class="w-full py-2.5 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition shadow-sm flex items-center justify-center gap-2">
+                            <span>⚡ Verify Biometrics & Punch In</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Column: Biometric Evaluation Metrics (7 cols) -->
+                <div class="lg:col-span-7 space-y-5">
+                    <div class="academic-card p-5 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                            <div>
+                                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700">Biometric Verification Output</h3>
+                                <p class="text-[11px] text-slate-500">ISO/IEC 30107-3 multi-spectral feature evaluation</p>
+                            </div>
+                            <span id="scanner-badge" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200">
+                                Ready for Scan
+                            </span>
+                        </div>
+
+                        <div id="biometric-hud-result" class="space-y-3">
+                            <div class="p-6 text-center text-slate-400 text-xs bg-slate-50 rounded-lg border border-slate-200">
+                                Select a worker and click <strong>"Verify Biometrics & Punch In"</strong> to run multi-spectral liveness detection.
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-50/60 p-3 rounded-lg border border-blue-100 text-xs text-blue-900 space-y-1">
+                            <div class="font-bold flex items-center gap-1.5">
+                                <span>💡</span>
+                                <span>Public Works Anti-Proxy Rationale:</span>
+                            </div>
+                            <p class="text-[11px] text-blue-800 leading-relaxed">
+                                In Indian infrastructure projects, labor contractors frequently attempt to punch in for absent "ghost workers" using photo prints or smartphone videos. Our Presentation Attack Detection (PAD) engine analyzes Fourier texture frequency and stereo depth to ensure wages are credited only to living, physically present laborers.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ======================================================== -->
+        <!-- TAB 2: Ingestion & Cloud Queue (FastAPI + Redis)         -->
+        <!-- ======================================================== -->
+        <section id="tab-queue" class="tab-pane hidden space-y-6">
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div>
+                    <h2 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        <span>☁️</span>
+                        Cloud Track: Asynchronous Multi-Worksite Ingestion & Queue Flow
+                    </h2>
+                    <p class="text-xs text-slate-600 mt-0.5">
+                        High-concurrency shift ingestion: Non-blocking FastAPI endpoint buffers payloads into Redis FIFO Streams, processed by Celery worker pools in under 100ms.
+                    </p>
+                </div>
+                <button onclick="refreshQueueLogs()" class="text-xs px-2.5 py-1.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition font-medium flex items-center gap-1">
+                    <span>🔄</span>
+                    <span>Refresh Logs</span>
+                </button>
+            </div>
+
+            <!-- Architecture Flow Cards -->
+            <div class="academic-card p-5 space-y-4">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700">Data Ingestion Architecture</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs space-y-1">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">STAGE 1</span>
+                            <span class="text-slate-400 font-mono">~8.5 ms</span>
+                        </div>
+                        <h4 class="font-bold text-slate-800">FastAPI Gateway</h4>
+                        <p class="text-[11px] text-slate-600">Endpoint: <code>POST /punch-in</code></p>
+                        <span class="text-[10px] font-mono text-emerald-600 font-semibold block">202 Accepted</span>
+                    </div>
+
+                    <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs space-y-1">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] font-bold text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-200">STAGE 2</span>
+                            <span class="text-slate-400 font-mono">~12.0 ms</span>
+                        </div>
+                        <h4 class="font-bold text-slate-800">Redis Stream Broker</h4>
+                        <p class="text-[11px] text-slate-600">FIFO Queue: <code>stream:muster_roll</code></p>
+                        <span class="text-[10px] font-mono text-purple-600 font-semibold block">In-Memory Stream</span>
+                    </div>
+
+                    <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs space-y-1">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">STAGE 3</span>
+                            <span class="text-slate-400 font-mono">~44.0 ms</span>
+                        </div>
+                        <h4 class="font-bold text-slate-800">Celery Worker Pool</h4>
+                        <p class="text-[11px] text-slate-600">Parallel PAD liveness inference across 4 worker nodes.</p>
+                        <span class="text-[10px] font-mono text-amber-600 font-semibold block">Async Processing</span>
+                    </div>
+
+                    <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs space-y-1">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">STAGE 4</span>
+                            <span class="text-slate-400 font-mono">~10.0 ms</span>
+                        </div>
+                        <h4 class="font-bold text-slate-800">Ledger Store</h4>
+                        <p class="text-[11px] text-slate-600">SHA-256 hash chaining & Merkle wage epoch rollup.</p>
+                        <span class="text-[10px] font-mono text-emerald-600 font-semibold block">Tamper-Proof Block</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Telemetry Metrics Strip -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="academic-card p-3">
+                    <span class="text-[11px] text-slate-500 font-medium block">Total Punches Ingested</span>
+                    <span id="metric-total-requests" class="text-lg font-bold font-mono text-slate-800 mt-0.5 block">--</span>
+                    <span class="text-[10px] text-slate-400 font-mono">Shift submissions</span>
+                </div>
+                <div class="academic-card p-3">
+                    <span class="text-[11px] text-slate-500 font-medium block">Avg E2E Turnaround</span>
+                    <span id="metric-avg-e2e" class="text-lg font-bold font-mono text-emerald-600 mt-0.5 block">--</span>
+                    <span class="text-[10px] text-slate-400 font-mono">Sub-second (&lt;150ms)</span>
+                </div>
+                <div class="academic-card p-3">
+                    <span class="text-[11px] text-slate-500 font-medium block">Redis Broker Latency</span>
+                    <span id="metric-redis-latency" class="text-lg font-bold font-mono text-purple-600 mt-0.5 block">--</span>
+                    <span class="text-[10px] text-slate-400 font-mono">Queue latency</span>
+                </div>
+                <div class="academic-card p-3">
+                    <span class="text-[11px] text-slate-500 font-medium block">Celery Worker Compute</span>
+                    <span id="metric-celery-latency" class="text-lg font-bold font-mono text-amber-600 mt-0.5 block">--</span>
+                    <span class="text-[10px] text-slate-400 font-mono">PAD neural eval</span>
+                </div>
+            </div>
+
+            <!-- Compact Activity Log Terminal -->
+            <div class="academic-card p-4 space-y-3">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700">FastAPI & Celery Activity Stream</h3>
+                    </div>
+                    <span class="text-[11px] font-mono text-slate-500">Real-Time Event Logs</span>
+                </div>
+                <div class="terminal-box p-3.5 space-y-1.5 max-h-[280px] overflow-y-auto" id="queue-log-box">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ======================================================== -->
+        <!-- TAB 3: Cryptographic Ledger & Audit Tool                 -->
+        <!-- ======================================================== -->
+        <section id="tab-ledger" class="tab-pane hidden space-y-6">
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div>
+                    <h2 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        <span>🔒</span>
+                        Security Track: Cryptographic Ledger & Tamper Audit Tool
+                    </h2>
+                    <p class="text-xs text-slate-600 mt-0.5">
+                        Each shift log binds to previous block hash via SHA-256. Any record modified in database storage is immediately excluded from wage entitlement calculations.
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button id="btn-run-audit" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition shadow-sm flex items-center gap-1.5">
+                        <span>🛡️</span>
+                        <span>Run Tamper Audit</span>
+                    </button>
+                    <button id="btn-reset-ledger" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition">
+                        <span>Reset Ledger</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Financial Metrics Strip (STRICTLY EXCLUDES CORRUPTED RECORDS!) -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                <div class="academic-card p-3">
+                    <span class="text-[11px] text-slate-500 block">Total Muster Blocks</span>
+                    <span id="ledger-records-count" class="font-mono font-bold text-slate-800 text-base mt-0.5 block">--</span>
+                    <span class="text-[10px] text-slate-400 font-mono">Chained shift blocks</span>
+                </div>
+                <div class="academic-card p-3">
+                    <span class="text-[11px] text-slate-500 block">Certified Wage Entitlement</span>
+                    <span id="ledger-total-wage" class="font-mono font-bold text-emerald-700 text-base mt-0.5 block">₹0.00</span>
+                    <span class="text-[10px] text-slate-400 font-mono">Excludes corrupted shifts</span>
+                </div>
+                <div class="academic-card p-3">
+                    <span class="text-[11px] text-slate-500 block">Blocked Corrupted Wage</span>
+                    <span id="ledger-blocked-wage" class="font-mono font-bold text-slate-500 text-base mt-0.5 block">₹0.00</span>
+                    <span class="text-[10px] text-rose-600 font-mono font-semibold" id="ledger-blocked-subtext">Withheld from payout</span>
+                </div>
+                <div class="academic-card p-3">
+                    <span class="text-[11px] text-slate-500 block">Muster Integrity Status</span>
+                    <div id="ledger-status-pill" class="mt-1">
+                        <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">✓ SEALED</span>
+                    </div>
+                    <span class="text-[10px] text-slate-400 font-mono mt-0.5 block">Cryptographic health</span>
+                </div>
+            </div>
+
+            <!-- Examiner Tamper Simulation Tool -->
+            <div class="academic-card p-4 border-l-4 border-l-amber-500 space-y-3 text-xs">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <span class="font-bold text-amber-900 flex items-center gap-1.5">
+                        <span>⚠️</span>
+                        Examiner Tamper Demonstration: Simulate Contractor Inflating Shifts
+                    </span>
+                    <span class="text-[11px] text-amber-800 font-mono">Adversarial Test</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+                    <div class="sm:col-span-5">
+                        <label class="font-medium text-slate-700 block mb-1">Target Shift Record to Alter:</label>
+                        <select id="tamper-record-select" class="w-full bg-white border border-slate-300 rounded p-2 text-xs text-slate-800 outline-none">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+
+                    <div class="sm:col-span-3">
+                        <label class="font-medium text-slate-700 block mb-1">Inflate Shifts (e.g. 2.5):</label>
+                        <input type="number" id="tamper-shifts-input" value="2.5" step="0.5" min="0.5" max="10" class="w-full bg-white border border-slate-300 rounded p-2 text-xs font-mono text-slate-800 outline-none">
+                    </div>
+
+                    <div class="sm:col-span-4">
+                        <button id="btn-apply-tamper" class="w-full py-2 px-3 rounded bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs transition shadow-sm">
+                            Simulate Database Tamper
+                        </button>
+                    </div>
+                </div>
+
+                <p class="text-[11px] text-slate-600">
+                    <strong>Real-World Fraud Scenario:</strong> If an insider or contractor alters attendance in the database to claim 2.5 shifts instead of 1.0, the SHA-256 hash breaks. The system flags the mismatch, <strong>excludes the corrupted wage from Certified Entitlement</strong>, and withholds payment.
+                </p>
+            </div>
+
+            <!-- Dynamic Audit Result Banner -->
+            <div id="audit-result-banner" class="hidden"></div>
+
+            <!-- SHA-256 Chained Shift Blocks List -->
+            <div class="academic-card p-4 space-y-3">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                        <span>⛓️</span>
+                        <span>SHA-256 Hash Chained Records ($H_i = \text{SHA-256}(H_{i-1} \parallel \text{Canonical}(R_i))$)</span>
+                    </h3>
+                    <span class="text-[11px] font-mono text-slate-500">Genesis: 000000...0000</span>
+                </div>
+                <div id="ledger-blocks-container" class="space-y-3">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+
+            <!-- Merkle Tree Rollup View -->
+            <div class="academic-card p-4 space-y-3">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                        <span>🌳</span>
+                        <span>Merkle Tree Epoch Rollup (Pay Period Root)</span>
+                    </h3>
+                    <span class="text-[11px] font-mono text-slate-500">Binary Tree Structure</span>
+                </div>
+                <div id="merkle-tree-container" class="overflow-x-auto py-2">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-3 text-center text-xs text-slate-500">
+        <p>SramikGuard Prototype &bull; Indian Infrastructure Public Works Case Study &bull; Capstone Project</p>
+    </footer>
+
+    <!-- Client Script -->
+    <script src="/static/app.js"></script>
+</body>
+</html>
