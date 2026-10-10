@@ -1,4 +1,4 @@
-# A Cloud-Based Multimodal Biometric Attendance Framework with Cryptographic Wage Auditing
+# SecurAttendance: Multimodal Biometric Attendance Framework with Cryptographic Wage Auditing
 ### Public Works & Daily Wage Labor Protection Testbed (Indian Infrastructure Case Study)
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.143.0-009688.svg?style=flat&logo=fastapi)](https://fastapi.tiangolo.com)

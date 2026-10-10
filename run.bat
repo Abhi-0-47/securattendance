@@ -1,8 +1,8 @@
 @echo off
-title Multimodal Biometric Attendance Prototype
+title SecurAttendance Prototype
 echo ====================================================================
-echo Starting Research Prototype Server...
-echo "A Cloud-Based Multimodal Biometric Attendance Framework with Cryptographic Wage Auditing"
+echo Starting SecurAttendance Server...
+echo "SecurAttendance: Multimodal Biometric Attendance Framework with Cryptographic Wage Auditing"
 echo ====================================================================
 python run.py
 pause

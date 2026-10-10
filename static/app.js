@@ -1,5 +1,5 @@
 /**
- * SramikGuard - Multi-Tab Controller
+ * SecurAttendance - Multi-Tab Controller
  * "Multimodal Biometric Attendance & Wage Auditing"
  * Isolated Block-Level Integrity & Dynamic Financial Aggregation
  */

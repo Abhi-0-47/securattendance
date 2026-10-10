@@ -14,7 +14,7 @@ def main():
     url = f"http://{host}:{port}"
 
     print("=" * 72)
-    print("   MULTIMODAL BIOMETRIC ATTENDANCE & CRYPTOGRAPHIC WAGE AUDIT")
+    print("   SECURATTENDANCE: BIOMETRIC ATTENDANCE & WAGE AUDITING FRAMEWORK")
     print("   Research Prototype Testbed Server")
     print("=" * 72)
     print(f"[*] Starting local server at: {url}")

@@ -1,6 +1,6 @@
 """
 Main FastAPI Application
-"SramikGuard: Multimodal Biometric Attendance Framework with Cryptographic Wage Auditing"
+"SecurAttendance: Multimodal Biometric Attendance Framework with Cryptographic Wage Auditing"
 Tailored for Indian Daily Wage & Construction/Infrastructure Labor Protection.
 Features isolated block-level integrity auditing and dynamic wage aggregation.
 """
@@ -18,7 +18,7 @@ from app.biometric_pad import BiometricPADService
 from app.queue_simulator import CloudQueueSimulator
 
 app = FastAPI(
-    title="SramikGuard: Daily Wage Attendance & Cryptographic Muster Auditing",
+    title="SecurAttendance: Daily Wage Attendance & Cryptographic Muster Auditing",
     description="Research prototype securing Indian daily wage workers against ghost-worker fraud and payroll tampering.",
     version="1.0.0",
 )
@@ -63,7 +63,7 @@ def serve_index():
     index_path = os.path.join(STATIC_DIR, "index.html")
     if os.path.exists(index_path):
         return FileResponse(index_path)
-    return {"message": "SramikGuard UI active. Access /docs for API."}
+    return {"message": "SecurAttendance UI active. Access /docs for API."}
 
 
 @app.get("/api/v1/workers", summary="Get Enrolled Indian Labor Registry")
